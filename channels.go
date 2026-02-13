@@ -68,7 +68,7 @@ func (channel *Channel) ChannelDetail(inputs Channels) (channelDetails Tblchanne
 }
 
 /*create channel*/
-func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int, tenantid string) (TblChannel, error) {
+func (channel *Channel) CreateChannel(channelcreate ChannelCreate, tenantid string) (TblChannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -87,10 +87,6 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int,
 	cchannel.CreatedBy = channelcreate.CreatedBy
 	cchannel.TenantId = tenantid
 	cchannel.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-	cchannel.ImagePath = channelcreate.ImagePath
-	cchannel.SeoTitle = channelcreate.SeoTitle
-	cchannel.SeoDescription = channelcreate.SeoDescription
-	cchannel.SeoKeyword = channelcreate.SeoKeyword
 	ch, chanerr := CH.CreateChannel(&cchannel, channel.DB)
 
 	if chanerr != nil {
@@ -193,7 +189,7 @@ func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby in
 
 /*Edit channel*/
 
-func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, channelslugname string, ChannelDescription, seotitle, seodescription, seokeyword string, modifiedby int, channelid int, CategoryIds []string, tenantid string) error {
+func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, channelslugname string, ChannelDescription string, modifiedby int, channelid int, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -209,12 +205,6 @@ func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, 
 	chn.ChannelUniqueId = channeluniqueid
 
 	chn.ChannelDescription = ChannelDescription
-
-	chn.SeoTitle = seotitle
-
-	chn.SeoDescription = seodescription
-
-	chn.SeoKeyword = seokeyword
 
 	chn.SlugName = strings.ReplaceAll(strings.ToLower(channelslugname), " ", "-")
 
@@ -292,5 +282,3 @@ func (channel *Channel) GetChannal(chname string, tenantid string) int {
 	channelid, _ := CH.GetChannelId(chname, tenantid, channel.DB)
 	return channelid
 }
-
-
