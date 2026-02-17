@@ -140,7 +140,7 @@ func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channel
 }
 
 /*Delete Channel*/
-func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename string, tenantid string) error {
+func (channel *Channel) DeleteChannel(channelid, modifiedby int,  tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -153,6 +153,8 @@ func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename strin
 
 		return ErrorChannelId
 	}
+
+	CH.DeleteChannelById(channelid, channel.DB, tenantid)
 
 	return nil
 

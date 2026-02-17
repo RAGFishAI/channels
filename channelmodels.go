@@ -61,6 +61,7 @@ type Tblchannel struct {
 	SeoTitle         string       `gorm:"column:seo_title"`
 	SeoDescription   string       `gorm:"column:seo_description"`
 	SeoKeyword       string       `gorm:"column:seo_keyword"`
+	FileCount        int64        `gorm:"<-:false"`
 }
 
 type TblChannel struct {
@@ -108,7 +109,11 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 /*channel list*/
 func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
 
-	query := DB.Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
+	query := DB.Table("tbl_channels").
+		Select("tbl_channels.*, COUNT(tbl_files.id) as file_count").
+		Where("tbl_channels.is_deleted = 0").
+		Joins("LEFT JOIN tbl_files ON tbl_channels.id = tbl_files.channel_id AND tbl_files.is_deleted = 0").
+		Group("tbl_channels.id")
 
 	if inputs.TenantId != "" {
 
