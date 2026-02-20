@@ -140,7 +140,7 @@ func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channel
 }
 
 /*Delete Channel*/
-func (channel *Channel) DeleteChannel(channelid, modifiedby int,  tenantid string) error {
+func (channel *Channel) DeleteChannel(channelid, modifiedby int, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -283,4 +283,20 @@ func (channel *Channel) GetChannal(chname string, tenantid string) int {
 
 	channelid, _ := CH.GetChannelId(chname, tenantid, channel.DB)
 	return channelid
+}
+
+func (channel *Channel) CheckNameInFolder(channelid int, folderid int, slugname string, tenantid string) (bool, error) {
+
+	channeldet, err := CH.CheckNameInFolder(channelid, folderid, slugname, channel.DB, tenantid)
+
+	if err != nil {
+		return false, err
+	}
+	if channeldet.Id == 0 {
+
+		return false, err
+	}
+
+	return true, nil
+
 }

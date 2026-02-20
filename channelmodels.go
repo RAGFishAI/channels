@@ -62,6 +62,7 @@ type Tblchannel struct {
 	SeoDescription   string       `gorm:"column:seo_description"`
 	SeoKeyword       string       `gorm:"column:seo_keyword"`
 	FileCount        int64        `gorm:"<-:false"`
+	FirstFolderId    int          `gorm:"<-:false"`
 }
 
 type TblChannel struct {
@@ -110,7 +111,15 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
 
 	query := DB.Table("tbl_channels").
-		Select("tbl_channels.*, COUNT(tbl_files.id) as file_count").
+		Select(`
+        tbl_channels.*, 
+        COUNT(tbl_files.id) as file_count,
+        (SELECT id FROM tbl_folders 
+         WHERE tbl_folders.channel_id = tbl_channels.id 
+         AND tbl_folders.is_deleted = 0 
+         ORDER BY tbl_folders.id 
+         LIMIT 1) as first_folder_id
+    `).
 		Where("tbl_channels.is_deleted = 0").
 		Joins("LEFT JOIN tbl_files ON tbl_channels.id = tbl_files.channel_id AND tbl_files.is_deleted = 0").
 		Group("tbl_channels.id")
@@ -415,5 +424,25 @@ func (ch ChannelModel) GetChannelId(chname string, tenantid string, DB *gorm.DB)
 	}
 
 	return Id, nil
+
+}
+
+func (ch ChannelModel) CheckNameInFolder(channelid, folderid int, foldername string, DB *gorm.DB, tenantid string) (channel TblChannel, err error) {
+
+	if folderid == 0 {
+
+		if err := DB.Table("tbl_folders").Where("LOWER(TRIM(folder_name))=LOWER(TRIM(?)) and channel_id=? and tenant_id=? and is_deleted=0", foldername, channelid, tenantid).First(&channel).Error; err != nil {
+
+			return TblChannel{}, err
+		}
+	} else {
+
+		if err := DB.Table("tbl_folders").Where("LOWER(TRIM(folder_name))=LOWER(TRIM(?)) and id not in (?) and channel_id=? and tenant_id=?   and is_deleted=0", foldername, folderid, channelid, tenantid).First(&channel).Error; err != nil {
+
+			return TblChannel{}, err
+		}
+	}
+
+	return channel, nil
 
 }
