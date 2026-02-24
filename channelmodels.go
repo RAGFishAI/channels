@@ -25,10 +25,28 @@ type Channels struct {
 	SortingOrder int
 	TenantId     string
 	EntriesCount bool
-
 	AuthorDetail bool
 	CreateOnly   bool
 	Count        bool
+	ChannelFile  bool
+}
+type TblFiles struct {
+	Id             int       `gorm:"primaryKey;auto_increment;type:serial"`
+	FileName       string    `gorm:"type:character varying"`
+	UniqueFileName string    `gorm:"type:character varying"`
+	FilePath       string    `gorm:"type:character varying"`
+	FileId         string    `gorm:"type:character varying"`
+	FolderName     string    `gorm:"type:character varying"`
+	ChannelId      int       `gorm:"type:integer"`
+	CreatedBy      int       `gorm:"type:integer"`
+	CreatedOn      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	IsActive       int       `gorm:"type:integer"`
+	IsDeleted      int       `gorm:"type:integer;DEFAULT:0"`
+	DeletedOn      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	DeletedBy      int       `gorm:"type:integer;DEFAULT:NULL"`
+	DateString     string    `gorm:"-"`
+	TenantId       string    `gorm:"type:character varying"`
+	FolderId       int       `gorm:"type:integer"`
 }
 
 type Tblchannel struct {
@@ -63,6 +81,7 @@ type Tblchannel struct {
 	SeoKeyword       string       `gorm:"column:seo_keyword"`
 	FileCount        int64        `gorm:"<-:false"`
 	FirstFolderId    int          `gorm:"<-:false"`
+	FilesData        []TblFiles     `gorm:"foreignKey:ChannelId;references:Id"`
 }
 
 type TblChannel struct {
@@ -112,7 +131,7 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channel
 
 	query := DB.Table("tbl_channels").
 		Select(`
-        tbl_channels.*, 
+        tbl_channels.* , 
         COUNT(tbl_files.id) as file_count,
         (SELECT id FROM tbl_folders 
          WHERE tbl_folders.channel_id = tbl_channels.id 
@@ -445,4 +464,12 @@ func (ch ChannelModel) CheckNameInFolder(channelid, folderid int, foldername str
 
 	return channel, nil
 
+}
+
+func (ch ChannelModel) GetFilesByChannelId(channelid int, DB *gorm.DB, tenantid string) (files []TblFiles, err error) {
+	if err := DB.Table("tbl_files").Where("channel_id=? and is_deleted=0 and tenant_id=?", channelid, tenantid).Find(&files).Error; err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }

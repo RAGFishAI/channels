@@ -45,6 +45,16 @@ func (channel *Channel) ListChannel(inputs Channels) (channelList []Tblchannel, 
 		return []Tblchannel{}, 0, err
 	}
 
+	if inputs.ChannelFile {
+
+		for i := range channellist {
+			files, err := CH.GetFilesByChannelId(channellist[i].Id, channel.DB, inputs.TenantId)
+			if err != nil {
+				return []Tblchannel{}, 0, err
+			}
+			channellist[i].FilesData = files
+		}
+	}
 	return channellist, int(count), nil
 }
 
