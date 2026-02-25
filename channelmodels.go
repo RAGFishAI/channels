@@ -81,7 +81,8 @@ type Tblchannel struct {
 	SeoKeyword       string       `gorm:"column:seo_keyword"`
 	FileCount        int64        `gorm:"<-:false"`
 	FirstFolderId    int          `gorm:"<-:false"`
-	FilesData        []TblFiles     `gorm:"foreignKey:ChannelId;references:Id"`
+	FilesData        []TblFiles   `gorm:"foreignKey:ChannelId;references:Id"`
+	FolderCount      int          `gorm:"<-:false"`
 }
 
 type TblChannel struct {
@@ -131,8 +132,11 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channel
 
 	query := DB.Table("tbl_channels").
 		Select(`
-        tbl_channels.* , 
+        tbl_channels.*, 
         COUNT(tbl_files.id) as file_count,
+        (SELECT COUNT(*) FROM tbl_folders 
+         WHERE tbl_folders.channel_id = tbl_channels.id 
+         AND tbl_folders.is_deleted = 0) as folder_count,
         (SELECT id FROM tbl_folders 
          WHERE tbl_folders.channel_id = tbl_channels.id 
          AND tbl_folders.is_deleted = 0 
