@@ -310,3 +310,15 @@ func (channel *Channel) CheckNameInFolder(channelid int, folderid int, slugname 
 	return true, nil
 
 }
+
+func (channel *Channel) GetFolderFilelByChannelid(channelid int, tenantid string) ([]TblFolder, error) {
+
+	FolderndFiledata, err := CH.GetFolderFilelByChannelid(channelid, tenantid, channel.DB)
+
+	if err != nil {
+
+		return []TblFolder{}, nil
+	}
+
+	return FolderndFiledata, nil
+}

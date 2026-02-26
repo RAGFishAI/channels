@@ -120,6 +120,22 @@ type ChannelModel struct {
 	Dataaccess int
 }
 
+type TblFolder struct {
+	Id         int        `gorm:"primaryKey;auto_increment;type:serial"`
+	FolderName string     `gorm:"type:character varying"`
+	ChannelId  int        `gorm:"type:integer"`
+	ParentId   int        `gorm:"type:integer"`
+	CreatedBy  int        `gorm:"type:integer"`
+	CreatedOn  time.Time  `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	IsActive   int        `gorm:"type:integer"`
+	IsDeleted  int        `gorm:"type:integer;DEFAULT:0"`
+	DeletedOn  time.Time  `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	DeletedBy  int        `gorm:"type:integer;DEFAULT:NULL"`
+	TenantId   string     `gorm:"type:character varying"`
+	FilesData  []TblFiles `gorm:"foreignKey:FolderId;references:Id"`
+	FilesCount int      `gorm:"-"`
+}
+
 var CH ChannelModel
 
 // soft delete check
@@ -476,4 +492,21 @@ func (ch ChannelModel) GetFilesByChannelId(channelid int, DB *gorm.DB, tenantid 
 	}
 
 	return files, nil
+}
+
+func (ch ChannelModel) GetFolderFilelByChannelid(channelid int, tenantid string, DB *gorm.DB) ([]TblFolder, error) {
+	var result []TblFolder
+
+	err := DB.Debug().Table("tbl_folders").
+		Where("channel_id = ? AND tenant_id = ? AND is_deleted = 0 ", channelid, tenantid).
+		Preload("FilesData").
+		Find(&result).Error
+
+	if err != nil {
+		return nil, err
+	}
+	for i := range result {
+		result[i].FilesCount = len(result[i].FilesData)
+	}
+	return result, nil
 }
