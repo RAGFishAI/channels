@@ -133,7 +133,7 @@ type TblFolder struct {
 	DeletedBy  int        `gorm:"type:integer;DEFAULT:NULL"`
 	TenantId   string     `gorm:"type:character varying"`
 	FilesData  []TblFiles `gorm:"foreignKey:FolderId;references:Id"`
-	FilesCount int      `gorm:"-"`
+	FilesCount int        `gorm:"-"`
 }
 
 var CH ChannelModel
@@ -498,8 +498,10 @@ func (ch ChannelModel) GetFolderFilelByChannelid(channelid int, tenantid string,
 	var result []TblFolder
 
 	err := DB.Debug().Table("tbl_folders").
-		Where("channel_id = ? AND tenant_id = ? AND is_deleted = 0 ", channelid, tenantid).
-		Preload("FilesData").
+		Where("channel_id = ? AND tenant_id = ? AND is_deleted = 0", channelid, tenantid).
+		Preload("FilesData", func(db *gorm.DB) *gorm.DB {
+			return db.Where("is_deleted = 0 AND tenant_id = ?", tenantid)
+		}).
 		Find(&result).Error
 
 	if err != nil {
