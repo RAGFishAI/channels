@@ -113,6 +113,7 @@ type ChannelCreate struct {
 	SeoDescription     string
 	SeoKeyword         string
 	SlugName           string
+	ChannelType        string
 }
 
 type ChannelModel struct {

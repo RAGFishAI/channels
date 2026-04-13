@@ -92,6 +92,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, tenantid stri
 	cchannel.ChannelName = channelcreate.ChannelName
 	cchannel.ChannelUniqueId = channelcreate.ChannelUniqueId
 	cchannel.ChannelDescription = channelcreate.ChannelDescription
+	cchannel.ChannelType = channelcreate.ChannelType
 	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.SlugName, " ", "-"))
 	cchannel.IsActive = 1
 	cchannel.CreatedBy = channelcreate.CreatedBy
