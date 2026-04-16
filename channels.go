@@ -202,7 +202,7 @@ func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby in
 
 /*Edit channel*/
 
-func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, channelslugname string, ChannelDescription string, modifiedby int, channelid int, tenantid string) error {
+func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, channelslugname string, ChannelDescription string, modifiedby int, channelid int, channeltype string, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -218,6 +218,8 @@ func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, 
 	chn.ChannelUniqueId = channeluniqueid
 
 	chn.ChannelDescription = ChannelDescription
+
+	chn.ChannelType = channeltype
 
 	chn.SlugName = strings.ReplaceAll(strings.ToLower(channelslugname), " ", "-")
 
