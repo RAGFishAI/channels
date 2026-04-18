@@ -83,6 +83,7 @@ type Tblchannel struct {
 	FirstFolderId    int          `gorm:"<-:false"`
 	FilesData        []TblFiles   `gorm:"foreignKey:ChannelId;references:Id"`
 	FolderCount      int          `gorm:"<-:false"`
+	DbType           string       `gorm:"<-:false"`
 }
 
 type TblChannel struct {
@@ -150,6 +151,9 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channel
 	query := DB.Table("tbl_channels").
 		Select(`
         tbl_channels.*, 
+        (SELECT db_type FROM tbl_channel_db_details 
+         WHERE tbl_channel_db_details.channel_id = tbl_channels.id 
+         LIMIT 1) as db_type,
         COUNT(tbl_files.id) as file_count,
         (SELECT COUNT(*) FROM tbl_folders 
          WHERE tbl_folders.channel_id = tbl_channels.id 
@@ -160,10 +164,10 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channel
          ORDER BY tbl_folders.id 
          LIMIT 1) as first_folder_id
     `).
-		Where("tbl_channels.is_deleted = 0").
 		Joins("LEFT JOIN tbl_files ON tbl_channels.id = tbl_files.channel_id AND tbl_files.is_deleted = 0").
+		Where("tbl_channels.is_deleted = 0 AND tbl_channels.tenant_id = ?", inputs.TenantId).
 		Group("tbl_channels.id")
-
+		
 	if inputs.TenantId != "" {
 
 		query = query.Where("tbl_channels.tenant_id=?", inputs.TenantId)
